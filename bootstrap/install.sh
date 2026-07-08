@@ -4,6 +4,27 @@ set -eu
 repo_url="${DOTFILES_REPO:-https://github.com/micanis/dotfiles.git}"
 target_dir="${DOTFILES_DIR:-$HOME/.local/share/dotfiles}"
 
+require_darwin_command_line_tools() {
+  if [ "$(uname -s)" != "Darwin" ]; then
+    return
+  fi
+
+  if xcode-select -p >/dev/null 2>&1; then
+    return
+  fi
+
+  cat >&2 <<'EOF'
+Apple Command Line Tools are required before bootstrapping this Mac.
+
+Run:
+  xcode-select --install
+
+After the installation finishes, rerun:
+  curl -fsSL https://raw.githubusercontent.com/micanis-dev/dotfiles/main/bootstrap/install.sh | sh
+EOF
+  exit 1
+}
+
 install_nix() {
   if command -v nix >/dev/null 2>&1; then
     return
@@ -36,6 +57,8 @@ install_nix() {
 }
 
 clone_dotfiles() {
+  require_darwin_command_line_tools
+
   mkdir -p "$(dirname "$target_dir")"
 
   if command -v git >/dev/null 2>&1; then

@@ -1,6 +1,18 @@
 #!/usr/bin/env sh
 set -eu
 
+if ! xcode-select -p >/dev/null 2>&1; then
+  cat >&2 <<'EOF'
+Apple Command Line Tools are required before bootstrapping this Mac.
+
+Run:
+  xcode-select --install
+
+After the installation finishes, rerun the bootstrap command.
+EOF
+  exit 1
+fi
+
 install_nix() {
   if command -v nix >/dev/null 2>&1; then
     return
