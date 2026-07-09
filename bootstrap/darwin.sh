@@ -1,18 +1,6 @@
 #!/usr/bin/env sh
 set -eu
 
-if ! xcode-select -p >/dev/null 2>&1; then
-  cat >&2 <<'EOF'
-Apple Command Line Tools are required before bootstrapping this Mac.
-
-Run:
-  xcode-select --install
-
-After the installation finishes, rerun the bootstrap command.
-EOF
-  exit 1
-fi
-
 install_nix() {
   if command -v nix >/dev/null 2>&1; then
     return
@@ -23,8 +11,12 @@ install_nix() {
     exit 1
   fi
 
-  curl -L https://nixos.org/nix/install | sh -s -- --daemon
+  curl -sSfL https://artifacts.nixos.org/nix-installer | sh -s -- install
   export PATH="/nix/var/nix/profiles/default/bin:$PATH"
+}
+
+run_nix() {
+  nix --extra-experimental-features "nix-command flakes" "$@"
 }
 
 install_nix
@@ -36,5 +28,5 @@ fi
 
 cd "$(dirname "$0")/.."
 
-nix build .#darwinConfigurations.darwin.system
+run_nix build .#darwinConfigurations.darwin.system
 sudo ./result/sw/bin/darwin-rebuild switch --flake .#darwin

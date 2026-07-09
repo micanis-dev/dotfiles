@@ -15,9 +15,6 @@
     profileExtra = ''
       [ -n "$BASH_VERSION" ] && [ -f "$HOME/.bashrc" ] && . "$HOME/.bashrc"
     '';
-    initExtra = ''
-      command -v direnv >/dev/null 2>&1 && eval "$(direnv hook bash)"
-    '';
   };
 
   programs.zsh = {
@@ -28,12 +25,13 @@
     '';
     initContent = ''
       [[ -o interactive ]] || return
-
-      command -v starship >/dev/null 2>&1 && eval "$(starship init zsh)"
-      command -v zoxide >/dev/null 2>&1 && eval "$(zoxide init zsh)"
-      command -v direnv >/dev/null 2>&1 && eval "$(direnv hook zsh)"
     '';
   };
 
-  programs.zoxide.enable = true;
+  programs.zoxide = {
+    enable = true;
+    enableBashIntegration = true;
+    enableZshIntegration = true;
+    enableNushellIntegration = true;
+  };
 }

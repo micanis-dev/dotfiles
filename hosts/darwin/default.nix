@@ -15,9 +15,13 @@
 
   home-manager.useGlobalPkgs = true;
   home-manager.useUserPackages = true;
+  home-manager.backupFileExtension = "before-home-manager";
   home-manager.users.${username} = {
     imports = [
       ../../modules/common
+      {
+        xdg.configFile."ghostty".source = ../../config/ghostty;
+      }
     ];
 
     home.username = username;

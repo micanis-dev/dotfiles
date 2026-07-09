@@ -9,6 +9,5 @@
     ./nushell.nix
     ./direnv.nix
     ./zellij.nix
-    ./ghostty.nix
   ];
 }

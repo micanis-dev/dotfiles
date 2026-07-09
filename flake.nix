@@ -2,15 +2,15 @@
   description = "micanis dotfiles";
 
   inputs = {
-    nixpkgs.url = "tarball+https://github.com/NixOS/nixpkgs/archive/refs/heads/nixos-unstable.tar.gz";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
 
     home-manager = {
-      url = "tarball+https://github.com/nix-community/home-manager/archive/refs/heads/master.tar.gz";
+      url = "github:nix-community/home-manager/master";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
     nix-darwin = {
-      url = "tarball+https://github.com/nix-darwin/nix-darwin/archive/refs/heads/master.tar.gz";
+      url = "github:nix-darwin/nix-darwin/master";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
@@ -78,11 +78,6 @@
         linux-headless = mkHome {
           system = "x86_64-linux";
           hostModule = ./hosts/linux-headless/home.nix;
-        };
-
-        alpine = mkHome {
-          system = "x86_64-linux";
-          hostModule = ./hosts/alpine/home.nix;
         };
       };
 

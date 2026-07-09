@@ -1,42 +1,53 @@
 #!/usr/bin/env sh
 set -eu
 
-archive_url="${DOTFILES_ARCHIVE_URL:-https://github.com/micanis-dev/dotfiles/archive/refs/heads/main.tar.gz}"
+repo_url="${DOTFILES_REPO:-https://github.com/micanis-dev/dotfiles.git}"
 target_dir="${DOTFILES_DIR:-$HOME/.local/share/dotfiles}"
 
-fetch_dotfiles() {
-  mkdir -p "$(dirname "$target_dir")"
+install_nix() {
+  if command -v nix >/dev/null 2>&1; then
+    return
+  fi
 
-  if [ -e "$target_dir" ]; then
-    echo "$target_dir already exists but does not look like this dotfiles repository." >&2
+  if ! command -v curl >/dev/null 2>&1; then
+    echo "curl is required to install Nix." >&2
     exit 1
   fi
 
-  if ! command -v curl >/dev/null 2>&1 || ! command -v tar >/dev/null 2>&1; then
-    echo "curl and tar are required to fetch dotfiles." >&2
-    exit 1
-  fi
+  case "$(uname -s)" in
+    Darwin|Linux)
+      curl -sSfL https://artifacts.nixos.org/nix-installer | sh -s -- install
+      ;;
+    *)
+      echo "Unsupported system: $(uname -s)" >&2
+      exit 1
+      ;;
+  esac
 
-  tmp_dir=$(mktemp -d "${TMPDIR:-/tmp}/dotfiles.XXXXXX")
-  archive_file="$tmp_dir/dotfiles.tar.gz"
-
-  curl -fsSL "$archive_url" -o "$archive_file"
-  top_dir=$(tar -tzf "$archive_file" | sed -n '1s,/.*,,p')
-  if [ -z "$top_dir" ]; then
-    echo "Unable to determine dotfiles archive root." >&2
-    exit 1
-  fi
-
-  tar -xzf "$archive_file" -C "$tmp_dir"
-  mv "$tmp_dir/$top_dir" "$target_dir"
-  rm -rf "$tmp_dir"
+  export PATH="/nix/var/nix/profiles/default/bin:$PATH"
 }
 
-script_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
-if [ -f "$script_dir/../flake.nix" ]; then
+script_dir=$(CDPATH= cd -- "$(dirname "$0")" && pwd)
+if [ -f "$script_dir/install.sh" ] && [ -f "$script_dir/../flake.nix" ]; then
   target_dir=$(CDPATH= cd -- "$script_dir/.." && pwd)
-elif [ ! -f "$target_dir/flake.nix" ]; then
-  fetch_dotfiles
+else
+  install_nix
+
+  if ! command -v nix >/dev/null 2>&1; then
+    echo "nix is not available after installation. Open a new shell and rerun this script." >&2
+    exit 1
+  fi
+
+  mkdir -p "$(dirname "$target_dir")"
+
+  if [ -d "$target_dir/.git" ]; then
+    DOTFILES_DIR="$target_dir" nix-shell -p git --run 'git -C "$DOTFILES_DIR" pull --ff-only'
+  elif [ -e "$target_dir" ]; then
+    echo "$target_dir exists but is not a git repository." >&2
+    exit 1
+  else
+    DOTFILES_REPO="$repo_url" DOTFILES_DIR="$target_dir" nix-shell -p git --run 'git clone "$DOTFILES_REPO" "$DOTFILES_DIR"'
+  fi
 fi
 
 case "$(uname -s)" in
@@ -44,10 +55,6 @@ case "$(uname -s)" in
     exec "$target_dir/bootstrap/darwin.sh"
     ;;
   Linux)
-    if [ -f /etc/alpine-release ]; then
-      exec "$target_dir/bootstrap/alpine.sh"
-    fi
-
     profile="${1:-linux-headless}"
     exec "$target_dir/bootstrap/linux.sh" "$profile"
     ;;

@@ -4,12 +4,10 @@
     zellij
     nushell
     helix
-    starship
     ripgrep
     fd
     bat
     eza
-    zoxide
     fzf
     yazi
     delta
@@ -21,7 +19,6 @@
     tokei
     jq
     yq-go
-    direnv
     marksman
     taplo
   ];

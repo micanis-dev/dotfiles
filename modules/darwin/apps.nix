@@ -1,12 +1,15 @@
 {
   homebrew = {
     casks = [
+      "craft"
+      "cursor"
+      "discord"
+      "docker"
       "ghostty"
       "google-chrome"
-      "docker"
-      "cursor"
+      "notion"
       "slack"
-      "discord"
+      "vivaldi"
     ];
     brews = [
       "gcc"

@@ -1,6 +1,14 @@
 {
   programs = {
-    git.enable = true;
+    git = {
+      enable = true;
+      settings = {
+        user.name = "micanis";
+        init.defaultBranch = "main";
+        pull.rebase = true;
+        push.autoSetupRemote = true;
+      };
+    };
 
     delta = {
       enable = true;

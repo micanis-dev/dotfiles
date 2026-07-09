@@ -22,8 +22,12 @@ install_nix() {
     exit 1
   fi
 
-  curl -L https://nixos.org/nix/install | sh -s -- --daemon
+  curl -sSfL https://artifacts.nixos.org/nix-installer | sh -s -- install
   export PATH="/nix/var/nix/profiles/default/bin:$PATH"
+}
+
+run_nix() {
+  nix --extra-experimental-features "nix-command flakes" "$@"
 }
 
 install_nix
@@ -35,5 +39,5 @@ fi
 
 cd "$(dirname "$0")/.."
 
-nix build ".#homeConfigurations.${profile}.activationPackage"
+run_nix build ".#homeConfigurations.${profile}.activationPackage"
 ./result/activate

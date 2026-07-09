@@ -10,7 +10,6 @@
 * Linux (GUI)
 * Linux (Headless)
 * NixOS
-* Alpine Linux
 
 基本思想は以下とする。
 
@@ -18,7 +17,6 @@
 * macOS は nix-darwin を利用する
 * NixOS は NixOS Modules を利用する
 * 開発環境は Flakes + devShell + nix-direnv を利用する
-* Alpine は例外として最低限の bootstrap を許容する
 * chezmoi は使用しない
 
 ---
@@ -61,18 +59,6 @@
 * NixOS Modules
 * Home Manager
 
-### Alpine
-
-原則は Home Manager を利用する。
-
-ただし以下の場合は bootstrap のみ利用する。
-
-* コンテナ
-* 最小環境
-* Nix導入が適さない環境
-
----
-
 # ディレクトリ構成
 
 ```text
@@ -84,15 +70,13 @@ dotfiles/
 ├── bootstrap/
 │   ├── install.sh
 │   ├── darwin.sh
-│   ├── linux.sh
-│   └── alpine.sh
+│   └── linux.sh
 │
 ├── hosts/
 │   ├── mac-mini/
 │   ├── linux-gui/
 │   ├── linux-headless/
-│   ├── nixos/
-│   └── alpine/
+│   └── nixos/
 │
 ├── modules/
 │   ├── common/
@@ -320,19 +304,6 @@ project/
 ├── flake.nix
 └── .envrc
 ```
-
----
-
-# Alpineの扱い
-
-Alpineは例外。
-
-以下のどちらかを選択する。
-
-* Home Manager
-* bootstrapのみ
-
-無理にNixへ統一しない。
 
 ---
 
