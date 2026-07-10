@@ -133,7 +133,7 @@ in
   # Hardware keyboard remapping.
   system.keyboard = {
     enableKeyMapping = true;
-    remapCapsLockToEscape = true;
+    remapCapsLockToEscape = false;
   };
 
   system.stateVersion = 6;

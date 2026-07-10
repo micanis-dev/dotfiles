@@ -11,7 +11,7 @@ checklist for migration to another Mac.
 | User | Primary user is `micanis`; home is `/Users/micanis`; login shell is Nushell |
 | Security | Touch ID for `sudo` |
 | Locale | Languages `en-JP`, `ja-JP`; locale `en_JP` |
-| Keyboard | Caps Lock to Escape; fast key repeat; press-and-hold disabled; standard Fn behavior |
+| Keyboard | Standard Caps Lock and Fn behavior; fast key repeat; press-and-hold disabled |
 | Appearance | Dark mode |
 | Input | Natural scrolling disabled; force click enabled; mouse speed `0.5`; trackpad speed `0.6875` |
 | Menu bar | Battery percentage shown; clock shows AM/PM, weekday, and date when space allows |
