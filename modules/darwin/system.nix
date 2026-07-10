@@ -78,8 +78,6 @@ in
       persistent-apps = [
         "/Applications/Vivaldi.app"
         "/Applications/Craft.app"
-        "/System/Applications/iPhone Mirroring.app"
-        "/Applications/Notion.app"
         "/Applications/Ghostty.app"
       ];
       persistent-others = [

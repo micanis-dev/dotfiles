@@ -2,17 +2,18 @@
   homebrew = {
     casks = [
       "craft"
-      "cursor"
       "discord"
-      "docker"
+      "docker-desktop"
       "ghostty"
-      "google-chrome"
+      "bitwarden"
+      "microsoft-excel"
+      "microsoft-powerpoint"
+      "microsoft-word"
       "notion"
+      "raycast"
       "slack"
       "vivaldi"
-    ];
-    brews = [
-      "gcc"
+      "zoom"
     ];
   };
 }
