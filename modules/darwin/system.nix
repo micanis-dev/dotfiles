@@ -56,7 +56,7 @@ in
       KeyRepeat = 2;
       NSAutomaticPeriodSubstitutionEnabled = false;
       NSTableViewDefaultSizeMode = 1;
-      "com.apple.keyboard.fnState" = true;
+      "com.apple.keyboard.fnState" = false;
       "com.apple.springing.delay" = 0.5;
       "com.apple.springing.enabled" = true;
       "com.apple.swipescrolldirection" = false;
