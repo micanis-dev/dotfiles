@@ -1,9 +1,6 @@
 // Zellij configuration
 // https://zellij.dev/documentation/
 
-// Use nushell as the default shell inside Zellij
-default_shell "nu"
-
 // Hide pane frames for a cleaner look (toggle with Ctrl+p f)
 pane_frames false
 
