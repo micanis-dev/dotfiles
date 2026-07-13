@@ -31,13 +31,13 @@
         inherit inputs username homeStateVersion;
       };
 
-      forAllSystems =
-        nixpkgs.lib.genAttrs [
-          "aarch64-darwin"
-          "x86_64-linux"
-        ];
+      forAllSystems = nixpkgs.lib.genAttrs [
+        "aarch64-darwin"
+        "x86_64-linux"
+      ];
 
-      pkgsFor = system:
+      pkgsFor =
+        system:
         import nixpkgs {
           inherit system;
           config.allowUnfree = true;
@@ -101,7 +101,7 @@
           default = pkgs.mkShell {
             packages = with pkgs; [
               git
-              nixfmt-rfc-style
+              nixfmt
               nil
               statix
               deadnix
@@ -110,19 +110,5 @@
         }
       );
 
-      templates = {
-        python = {
-          path = ./templates/python;
-          description = "Python devShell with nix-direnv";
-        };
-        rust = {
-          path = ./templates/rust;
-          description = "Rust devShell with nix-direnv";
-        };
-        cpp = {
-          path = ./templates/cpp;
-          description = "C++ devShell with nix-direnv";
-        };
-      };
     };
 }

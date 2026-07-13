@@ -90,10 +90,6 @@ dotfiles/
 │   ├── starship.toml
 │   └── ssh/
 │
-└── templates/
-    ├── python/
-    ├── cpp/
-    └── rust/
 ```
 
 ---
@@ -366,5 +362,4 @@ curl -fsSL https://<domain>/install.sh | sh
 * ホスト自動判定
 * CIによるflakeチェック
 * GitHub Actionsによるテスト
-* 開発テンプレートの自動生成
 * 共通ライブラリ化

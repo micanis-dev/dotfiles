@@ -1,5 +1,5 @@
 # Helix LSP / language configuration
-# Install servers with: chezmoi apply → run_onchange_install-lsp-servers.sh
+# Install language servers through the project's development environment.
 
 # ─── Python ───────────────────────────────────────────────────────────────────
 # basedpyright: pyright の上位互換（型チェック）
@@ -125,7 +125,7 @@ args    = ["start"]
 # ─── C / C++ ──────────────────────────────────────────────────────────────────
 # Targeted at competitive programming: clangd for completion / diagnostics,
 # clang-format for formatting. Submissions are compiled with g++ (also
-# installed by run_onchange_01_install.sh).
+# installed by the project's C++ development shell).
 
 [[language]]
 name             = "cpp"
@@ -144,7 +144,7 @@ command = "clangd"
 args    = ["--background-index", "--clang-tidy", "--header-insertion=never"]
 
 # ─── Java ─────────────────────────────────────────────────────────────────────
-# JDK provided by SDKMAN; LSP is Eclipse JDT-LS (binary `jdtls`).
+# JDK and Eclipse JDT-LS (binary `jdtls`) are provided by the project environment.
 
 [[language]]
 name             = "java"

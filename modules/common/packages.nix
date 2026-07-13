@@ -2,7 +2,6 @@
 {
   home.packages = with pkgs; [
     zellij
-    nushell
     helix
     ripgrep
     fd
@@ -10,7 +9,6 @@
     eza
     fzf
     yazi
-    delta
     gh
     lazygit
     dust

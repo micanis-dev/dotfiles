@@ -19,7 +19,7 @@ checklist for migration to another Mac.
 | Finder desktop | Show external disks, mounted servers, and removable media; hide internal hard disks |
 | Desktop services | Do not write `.DS_Store` files on network or USB volumes |
 | Dock | Autohide; no recents; size `58`; Mission Control/App Expose gestures enabled; Desktop/Launchpad gestures disabled |
-| Dock items | Vivaldi, Craft, iPhone Mirroring, Notion, Ghostty, and Downloads stack |
+| Dock items | Vivaldi, Craft, Ghostty, and Downloads stack |
 | Screenshots | Save screenshots to clipboard |
 | Apps | Homebrew casks in `modules/darwin/apps.nix` |
 | User files | Home Manager modules under `modules/common` and app config under `config/` |
