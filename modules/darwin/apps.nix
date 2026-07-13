@@ -5,6 +5,7 @@
       "discord"
       "docker-desktop"
       "ghostty"
+      "jump-desktop"
       "bitwarden"
       "microsoft-excel"
       "microsoft-powerpoint"
@@ -12,6 +13,7 @@
       "notion"
       "raycast"
       "slack"
+      "tailscale"
       "vivaldi"
       "zoom"
     ];

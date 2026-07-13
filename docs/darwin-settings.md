@@ -22,6 +22,7 @@ checklist for migration to another Mac.
 | Dock items | Vivaldi, Craft, Ghostty, and Downloads stack |
 | Screenshots | Save screenshots to clipboard |
 | Apps | Homebrew casks in `modules/darwin/apps.nix` |
+| Tailscale | Installed as a cask; starts at login and exposes `tailscale` on PATH |
 | User files | Home Manager modules under `modules/common` and app config under `config/` |
 
 ## Compare a Mac before migrating

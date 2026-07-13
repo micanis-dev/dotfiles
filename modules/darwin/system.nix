@@ -36,6 +36,12 @@ in
         DSDontWriteUSBStores = true;
       };
 
+      # The Homebrew cask installs Tailscale's standalone macOS variant.
+      # Start its login helper whenever this user signs in.
+      "io.tailscale.ipn.macsys" = {
+        TailscaleStartOnLogin = true;
+      };
+
       NSGlobalDomain = {
         AppleLanguages = [
           "en-JP"
