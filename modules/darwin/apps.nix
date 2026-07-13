@@ -5,7 +5,7 @@
       "discord"
       "docker-desktop"
       "ghostty"
-      "jump-desktop"
+      "jump-desktop-connect"
       "bitwarden"
       "microsoft-excel"
       "microsoft-powerpoint"
