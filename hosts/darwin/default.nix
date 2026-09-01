@@ -41,17 +41,39 @@
           '';
 
           # Karabiner rewrites karabiner.json when its settings change, so a
-          # read-only Home Manager symlink is not suitable here. Install a
-          # writable copy on every activation instead.
+          # read-only Home Manager symlink is not suitable here. Keep device
+          # enable/disable choices local to each Mac while refreshing the
+          # shared mappings from this repository on every activation.
           home.activation.installKarabinerConfig = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
             config_dir="$HOME/.config/karabiner"
             config_file="$config_dir/karabiner.json"
+            managed_config=${../../config/karabiner/karabiner.json}
+            merged_config="$config_dir/.karabiner.json.home-manager"
 
             $DRY_RUN_CMD mkdir -p "$config_dir"
             if [ -L "$config_file" ]; then
               $DRY_RUN_CMD rm "$config_file"
             fi
-            $DRY_RUN_CMD install -m 600 ${../../config/karabiner/karabiner.json} "$config_file"
+
+            if [ -f "$config_file" ] && ${pkgs.jq}/bin/jq -e 'type == "object"' "$config_file" > /dev/null; then
+              ${pkgs.jq}/bin/jq -s '
+                .[0] as $managed
+                | .[1] as $local
+                | $managed
+                | .profiles |= map(
+                    . as $profile
+                    | ($local.profiles // [] | map(select(.name == $profile.name)) | first) as $local_profile
+                    | if $local_profile != null and ($local_profile | has("devices"))
+                      then .devices = $local_profile.devices
+                      else .
+                      end
+                  )
+              ' "$managed_config" "$config_file" > "$merged_config"
+              $DRY_RUN_CMD install -m 600 "$merged_config" "$config_file"
+              $DRY_RUN_CMD rm "$merged_config"
+            else
+              $DRY_RUN_CMD install -m 600 "$managed_config" "$config_file"
+            fi
           '';
         }
       )
