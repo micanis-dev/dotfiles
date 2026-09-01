@@ -1,9 +1,20 @@
 # Nushell environment — sourced before config.nu
 
-# PATH (devbox/direnv handle per-project tools)
-$env.PATH = ($env.PATH | split row (char esep) | prepend [
+# PATH (devbox/direnv handle per-project tools). Nushell can be launched by a
+# macOS GUI app without nix-darwin's shell initialization, so include the Nix
+# profiles explicitly instead of relying on the inherited PATH.
+$env.PATH = ($env.PATH? | default "" | split row (char esep) | prepend [
     ($env.HOME | path join ".local" "bin")
-] | uniq)
+    ($env.HOME | path join ".nix-profile" "bin")
+    (["/etc/profiles/per-user" $env.USER "bin"] | path join)
+    "/run/current-system/sw/bin"
+    "/nix/var/nix/profiles/default/bin"
+    "/usr/local/bin"
+    "/usr/bin"
+    "/bin"
+    "/usr/sbin"
+    "/sbin"
+] | where {|path| $path != "" } | uniq)
 
 # Editor
 $env.EDITOR = "hx"
