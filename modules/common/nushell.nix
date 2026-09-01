@@ -1,12 +1,17 @@
-{ config, lib, ... }:
+{ config, lib, pkgs, ... }:
 let
-  configDir = "${config.xdg.configHome}/nushell";
+  configDir =
+    if pkgs.stdenv.isDarwin then
+      "${config.home.homeDirectory}/Library/Application Support/nushell"
+    else
+      "${config.xdg.configHome}/nushell";
 in
 {
   programs.nushell = {
     enable = true;
-    # Nushell defaults to ~/Library/Application Support on Darwin. Keep all
-    # platforms on the XDG path managed by this repository.
+    # A login shell launched by a macOS GUI app does not necessarily inherit
+    # XDG_CONFIG_HOME, so use Nushell's native Darwin path there. Other
+    # platforms keep their configuration under XDG_CONFIG_HOME.
     inherit configDir;
     configFile.source = ../../config/nushell/config.nu;
     envFile.source = ../../config/nushell/env.nu;
