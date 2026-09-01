@@ -6,6 +6,7 @@
       "docker-desktop"
       "ghostty"
       "jump-desktop-connect"
+      "karabiner-elements"
       "bitwarden"
       "microsoft-excel"
       "microsoft-powerpoint"
@@ -13,9 +14,12 @@
       "notion"
       "raycast"
       "slack"
-      "tailscale"
       "vivaldi"
       "zoom"
     ];
+
+    masApps = {
+      "RunCat Neo" = 6757801838;
+    };
   };
 }

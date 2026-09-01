@@ -10,8 +10,9 @@ checklist for migration to another Mac.
 | --- | --- |
 | User | Primary user is `micanis`; home is `/Users/micanis`; login shell is Nushell |
 | Security | Touch ID for `sudo` |
+| Power | System sleep disabled on battery and AC power; display sleeps after 60 minutes |
 | Locale | Languages `en-JP`, `ja-JP`; locale `en_JP` |
-| Keyboard | Standard Caps Lock and Fn behavior; fast key repeat; press-and-hold disabled |
+| Keyboard | Karabiner-Elements swaps Control and Command; Caps Lock sends Control+Space, and Shift+Caps Lock toggles Caps Lock; fast key repeat, press-and-hold, and Japanese Live Conversion disabled |
 | Appearance | Dark mode |
 | Input | Natural scrolling disabled; force click enabled; mouse speed `0.5`; trackpad speed `0.6875` |
 | Menu bar | Battery percentage shown; clock shows AM/PM, weekday, and date when space allows |
@@ -21,8 +22,9 @@ checklist for migration to another Mac.
 | Dock | Autohide; no recents; size `58`; Mission Control/App Expose gestures enabled; Desktop/Launchpad gestures disabled |
 | Dock items | Vivaldi, Craft, Ghostty, and Downloads stack |
 | Screenshots | Save screenshots to clipboard |
+| Default apps | Open PDF files in the current default browser |
 | Apps | Homebrew casks in `modules/darwin/apps.nix` |
-| Tailscale | Installed as a cask; starts at login and exposes `tailscale` on PATH |
+| Tailscale | Nix-provided CLI; `tailscaled` runs as a system daemon from boot |
 | User files | Home Manager modules under `modules/common` and app config under `config/` |
 
 ## Compare a Mac before migrating
@@ -44,6 +46,10 @@ Do not copy volatile values such as recent files, window bounds, analytics
 timestamps, mounted volume positions, or per-device history into Nix.
 
 ## Apply on another Mac
+
+Karabiner's configuration is installed as a writable file on every Home
+Manager activation. This lets Karabiner update the live file while keeping
+`config/karabiner/karabiner.json` as the declarative source of truth.
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/micanis-dev/dotfiles/main/bootstrap/install.sh | sh

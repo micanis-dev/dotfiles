@@ -1,4 +1,4 @@
-{ pkgs, username, ... }:
+{ config, lib, pkgs, username, ... }:
 let
   homeDirectory = "/Users/${username}";
 in
@@ -17,11 +17,49 @@ in
     nushell
   ];
 
+  # environment.shells only adds Nushell to /etc/shells; it does not create
+  # /run/current-system/sw/bin/nu, which is the stable login-shell path below.
+  environment.systemPackages = [ pkgs.nushell ];
+
   programs.zsh.enable = true;
 
-  users.users.${username}.shell = pkgs.nushell;
+  # nix-darwin deliberately leaves properties of existing macOS users alone
+  # unless it owns the whole account via users.knownUsers. The primary admin
+  # user must remain macOS-managed, so enforce only its login shell here.
+  system.activationScripts.postActivation.text = lib.mkAfter ''
+    desired_shell=/run/current-system/sw/bin/nu
+    current_shell="$(dscl . -read /Users/${username} UserShell 2> /dev/null | awk '{ print $2 }')"
+
+    if [ "$current_shell" != "$desired_shell" ]; then
+      echo >&2 "setting ${username}'s login shell to Nushell..."
+      dscl . -create /Users/${username} UserShell "$desired_shell"
+    fi
+
+    configured_shell="$(dscl . -read /Users/${username} UserShell | awk '{ print $2 }')"
+    if [ "$configured_shell" != "$desired_shell" ]; then
+      echo >&2 "error: failed to set ${username}'s login shell to Nushell"
+      exit 1
+    fi
+  '';
 
   security.pam.services.sudo_local.touchIdAuth = true;
+
+  # Install the CLI and run tailscaled as a system daemon from boot. This
+  # avoids depending on the GUI app or a per-user login item.
+  services.tailscale.enable = true;
+
+  # This is a one-time migration from the formerly managed GUI cask. The
+  # conditional keeps subsequent activations idempotent.
+  system.activationScripts.removeTailscaleApp.text = ''
+    if ${config.homebrew.prefix}/bin/brew list --cask tailscale-app > /dev/null 2>&1; then
+      ${config.homebrew.prefix}/bin/brew uninstall --cask tailscale-app
+    fi
+  '';
+
+  # Keep the system awake so background services such as Tailscale remain
+  # connected, while allowing idle displays to sleep after one hour.
+  power.sleep.computer = "never";
+  power.sleep.display = 60;
 
   system.defaults = {
     # Mouse settings shared by global preferences.
@@ -36,10 +74,10 @@ in
         DSDontWriteUSBStores = true;
       };
 
-      # The Homebrew cask installs Tailscale's standalone macOS variant.
-      # Start its login helper whenever this user signs in.
-      "io.tailscale.ipn.macsys" = {
-        TailscaleStartOnLogin = true;
+      # Disable Japanese IME Live Conversion so candidates are only committed
+      # explicitly.
+      "com.apple.inputmethod.Kotoeri" = {
+        JIMPrefLiveConversionKey = false;
       };
 
       NSGlobalDomain = {
@@ -134,12 +172,6 @@ in
       ShowDate = 0;
       ShowDayOfWeek = true;
     };
-  };
-
-  # Hardware keyboard remapping.
-  system.keyboard = {
-    enableKeyMapping = true;
-    remapCapsLockToEscape = false;
   };
 
   system.stateVersion = 6;

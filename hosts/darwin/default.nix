@@ -19,34 +19,42 @@
   home-manager.users.${username} = {
     imports = [
       ../../modules/common
-      {
-        xdg.configFile."ghostty".source = ../../config/ghostty;
+      (
+        { lib, pkgs, ... }:
+        {
+          xdg.configFile."ghostty".source = ../../config/ghostty;
 
-        # The cask's GUI app owns the macOS VPN extension. Expose its bundled
-        # CLI on the standard Home Manager path without installing the
-        # conflicting Homebrew formula.
-        home.file.".local/bin/tailscale" = {
-          text = ''
-            #!/bin/sh
-            exec /Applications/Tailscale.app/Contents/MacOS/Tailscale "$@"
+          home.packages = [ pkgs.duti ];
+
+          # Keep PDFs out of Preview and open them with the current default
+          # browser. Querying the HTML handler makes this follow browser
+          # changes instead of hard-coding Vivaldi's bundle identifier.
+          home.activation.openPdfsInDefaultBrowser = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+            browser_bundle_id="$(${pkgs.duti}/bin/duti -x html | tail -n 1)"
+
+            if [ -z "$browser_bundle_id" ]; then
+              echo >&2 "error: could not determine the default browser"
+              exit 1
+            fi
+
+            $DRY_RUN_CMD ${pkgs.duti}/bin/duti -s "$browser_bundle_id" com.adobe.pdf all
           '';
-          executable = true;
-        };
 
-        # Open the app once at every login. Tailscale then starts its own
-        # login helper and reconnects according to its saved session.
-        launchd.agents.tailscale = {
-          config = {
-            ProgramArguments = [
-              "/usr/bin/open"
-              "-gj"
-              "-a"
-              "Tailscale"
-            ];
-            RunAtLoad = true;
-          };
-        };
-      }
+          # Karabiner rewrites karabiner.json when its settings change, so a
+          # read-only Home Manager symlink is not suitable here. Install a
+          # writable copy on every activation instead.
+          home.activation.installKarabinerConfig = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+            config_dir="$HOME/.config/karabiner"
+            config_file="$config_dir/karabiner.json"
+
+            $DRY_RUN_CMD mkdir -p "$config_dir"
+            if [ -L "$config_file" ]; then
+              $DRY_RUN_CMD rm "$config_file"
+            fi
+            $DRY_RUN_CMD install -m 600 ${../../config/karabiner/karabiner.json} "$config_file"
+          '';
+        }
+      )
     ];
 
     home.username = username;

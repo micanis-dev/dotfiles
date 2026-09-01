@@ -29,27 +29,39 @@ args    = ["server"]
 
 [[language]]
 name             = "typescript"
-language-servers = ["typescript-language-server", "biome"]
+language-servers = [
+  { name = "typescript-language-server", except-features = ["format", "inlay-hints"] },
+  "biome",
+]
 auto-format      = true
 
 [[language]]
 name             = "javascript"
-language-servers = ["typescript-language-server", "biome"]
+language-servers = [
+  { name = "typescript-language-server", except-features = ["format", "inlay-hints"] },
+  "biome",
+]
 auto-format      = true
 
 [[language]]
 name             = "tsx"
-language-servers = ["typescript-language-server", "biome"]
+language-servers = [
+  { name = "typescript-language-server", except-features = ["format", "inlay-hints"] },
+  "biome",
+]
 auto-format      = true
 
 [[language]]
 name             = "jsx"
-language-servers = ["typescript-language-server", "biome"]
+language-servers = [
+  { name = "typescript-language-server", except-features = ["format", "inlay-hints"] },
+  "biome",
+]
 auto-format      = true
 
 [language-server.biome]
-command = "biome"
-args    = ["lsp-proxy"]
+command = "pnpm"
+args    = ["exec", "biome", "lsp-proxy"]
 
 # ─── Go ───────────────────────────────────────────────────────────────────────
 
