@@ -7,8 +7,7 @@
       "discord"
       "docker-desktop"
       "ghostty"
-      "jump-desktop" # client
-      "jump-desktop-connect" # host agent
+      "jump-desktop-connect" # host agent; the client is in masApps
       "karabiner-elements"
       "microsoft-excel"
       "microsoft-powerpoint"
@@ -21,6 +20,9 @@
     ];
 
     masApps = {
+      # Purchased on the App Store; the Homebrew cask is the web-store
+      # build, which needs a separate license.
+      "Jump Desktop" = 524141863;
       "RunCat Neo" = 6757801838;
     };
   };
