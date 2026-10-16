@@ -6,7 +6,7 @@
 }:
 let
   configDir =
-    if pkgs.stdenv.isDarwin then
+    if pkgs.stdenv.hostPlatform.isDarwin then
       "${config.home.homeDirectory}/Library/Application Support/nushell"
     else
       "${config.xdg.configHome}/nushell";
