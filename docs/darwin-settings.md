@@ -1,36 +1,35 @@
-# Darwin settings
+# macOS の設定一覧
 
-This file documents the macOS settings currently captured in nix-darwin.
-The source of truth is `modules/darwin/system.nix`; this page is a readable
-checklist for migration to another Mac.
+nix-darwin と Home Manager で管理している macOS の設定を、別の Mac へ移行するときの
+チェックリストとしてまとめたものです。正しい値はコード側にあります。
 
-## Managed settings
+## 管理している設定
 
-| Area | Setting |
-| --- | --- |
-| User | Primary user is `micanis`; home is `/Users/micanis`; login shell is Nushell |
-| Security | Touch ID for `sudo` |
-| Power | System sleep disabled on battery and AC power; display sleeps after 60 minutes |
-| Locale | Languages `en-JP`, `ja-JP`; locale `en_JP` |
-| Keyboard | Karabiner-Elements swaps Control and Command; Caps Lock sends Control+Space, and Shift+Caps Lock toggles Caps Lock; fast key repeat, press-and-hold, and Japanese Live Conversion disabled |
-| Appearance | Dark mode |
-| Input | Natural scrolling disabled; force click enabled; mouse speed `0.5`; trackpad speed `0.6875` |
-| Menu bar | Battery percentage shown; clock shows AM/PM, weekday, and date when space allows |
-| Finder | Show hidden files and all extensions; show path/status bars; show POSIX path in title; list view; search current folder; new windows open Home |
-| Finder desktop | Show external disks, mounted servers, and removable media; hide internal hard disks |
-| Desktop services | Do not write `.DS_Store` files on network or USB volumes |
-| Dock | Autohide; no recents; size `58`; Mission Control/App Expose gestures enabled; Desktop/Launchpad gestures disabled |
-| Dock items | Vivaldi, Craft, Ghostty, and Downloads stack |
-| Screenshots | Save screenshots to clipboard |
-| Default apps | Open PDF files in the current default browser |
-| Apps | Homebrew casks in `modules/darwin/apps.nix` |
-| Tailscale | Nix-provided CLI; `tailscaled` runs as a system daemon from boot |
-| User files | Home Manager modules under `modules/common` and app config under `config/` |
+| 分類 | 内容 | 定義場所 |
+| --- | --- | --- |
+| ユーザー | プライマリユーザー `micanis`、ホーム `/Users/micanis`、ログインシェルは Nushell | `hosts/darwin`, `modules/darwin/system.nix` |
+| セキュリティ | `sudo` で Touch ID を使用 | `modules/darwin/system.nix` |
+| 電源 | システムはスリープしない。ディスプレイは 60 分でスリープ | `modules/darwin/system.nix` |
+| Tailscale | Nix 版 CLI。`tailscaled` を起動時からシステムデーモンとして実行 | `modules/darwin/system.nix` |
+| 言語 | 優先言語 `en-JP`, `ja-JP`、ロケール `en_JP` | `modules/darwin/defaults.nix` |
+| キーボード | キーリピート高速化、長押しのアクセント入力無効、日本語入力のライブ変換無効 | `modules/darwin/defaults.nix` |
+| キー配列 | Karabiner-Elements で Control と Command を入れ替え。Caps Lock は Control+Space、Shift+Caps Lock で Caps Lock | `config/karabiner/karabiner.json` |
+| 外観 | ダークモード | `modules/darwin/defaults.nix` |
+| 入力 | ナチュラルスクロール無効、強めのクリック有効、マウス速度 `0.5`、トラックパッド速度 `0.6875` | `modules/darwin/defaults.nix` |
+| メニューバー | バッテリー残量を % 表示。時計は AM/PM・曜日を表示し、日付は余裕があるとき表示 | `modules/darwin/defaults.nix` |
+| Finder | 隠しファイルと拡張子を表示、パスバー・ステータスバー表示、タイトルに POSIX パス、リスト表示、検索は現在のフォルダ、新規ウインドウはホーム | `modules/darwin/defaults.nix` |
+| デスクトップ | 外部ディスク・サーバー・リムーバブルメディアを表示、内蔵ディスクは非表示 | `modules/darwin/defaults.nix` |
+| `.DS_Store` | ネットワークと USB ボリュームには作らない | `modules/darwin/defaults.nix` |
+| Dock | 自動的に隠す、最近使ったアプリ非表示、サイズ `58`、右下ホットコーナーでクイックメモ、Mission Control / App Exposé ジェスチャー有効 | `modules/darwin/defaults.nix` |
+| Dock の項目 | Vivaldi、Craft、Ghostty、ダウンロードフォルダ（スタック） | `modules/darwin/defaults.nix` |
+| スクリーンショット | クリップボードに保存 | `modules/darwin/defaults.nix` |
+| 既定アプリ | PDF を現在の既定ブラウザで開く | `modules/home/darwin/default-apps.nix` |
+| アプリ | Homebrew Cask と Mac App Store のアプリ | `modules/darwin/apps.nix` |
+| ユーザーファイル | シェル・Git・エディタなどの設定 | `modules/home/`, `config/` |
 
-## Compare a Mac before migrating
+## 移行元の Mac と比較する
 
-Run these commands on the source Mac and compare the stable values with
-`modules/darwin/system.nix`.
+`modules/darwin/defaults.nix` を変更する前に、現在の値を確認します。
 
 ```sh
 defaults read NSGlobalDomain
@@ -42,23 +41,24 @@ defaults read com.apple.menuextra.clock
 defaults read com.apple.controlcenter
 ```
 
-Do not copy volatile values such as recent files, window bounds, analytics
-timestamps, mounted volume positions, or per-device history into Nix.
+最近使った項目、ウインドウ位置、分析用のタイムスタンプ、マウントしたボリュームの位置、
+デバイスごとの履歴など、頻繁に変わる値は Nix に書かないでください。
 
-## Apply on another Mac
-
-Karabiner's configuration is installed as a writable file on every Home
-Manager activation. This lets Karabiner update the live file while keeping
-`config/karabiner/karabiner.json` as the declarative source of truth.
+## 別の Mac に適用する
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/micanis-dev/dotfiles/main/bootstrap/install.sh | sh
 ```
 
-If nix-darwin cannot take ownership of `/etc/shells` on the first activation,
-move the original aside and rerun the Darwin bootstrap:
+初回の適用で nix-darwin が `/etc/shells` を管理できない場合は、元のファイルを退避して
+再実行します。
 
 ```sh
 sudo mv /etc/shells /etc/shells.before-nix-darwin
 ./bootstrap/darwin.sh
 ```
+
+Karabiner の設定は、Home Manager の適用のたびに書き込み可能なファイルとして
+コピーされます。Karabiner がその場で設定を書き換えても動作し、次回の適用時には
+`config/karabiner/karabiner.json` の内容に戻ります（デバイスの有効／無効だけは
+各 Mac の値を保持します）。

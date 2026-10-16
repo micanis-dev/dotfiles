@@ -1,365 +1,122 @@
-# dotfiles 設計
+# 設計
 
 ## 目的
 
-本リポジトリは、複数OS・複数ホストの開発環境を **Nix** を中心に管理することを目的とする。
+複数の OS・ホストの開発環境を Nix で宣言的に管理し、新しいマシンでも
+1 コマンドで同じ環境を再現できるようにする。
 
-対象環境は以下の通り。
+対象は macOS、Linux（GUI あり／なし）、NixOS の 4 種類。
 
-* macOS
-* Linux (GUI)
-* Linux (Headless)
-* NixOS
+## 責務の分担
 
-基本思想は以下とする。
+| 責務 | 担当 | 置き場所 |
+| --- | --- | --- |
+| macOS のシステム設定 | nix-darwin | `modules/darwin/` |
+| NixOS のシステム設定 | NixOS modules | `modules/nixos/` |
+| ユーザー環境（CLI・シェル・dotfiles） | Home Manager | `modules/home/` |
+| macOS の GUI アプリ | Homebrew Cask（nix-darwin 経由） | `modules/darwin/apps.nix` |
+| アプリの設定ファイル本体 | そのままの形式で保存 | `config/` |
+| プロジェクトごとの開発環境 | 各プロジェクトの flake + devShell + nix-direnv | 各プロジェクト |
+| 初回導入 | bootstrap スクリプト | `bootstrap/` |
 
-* Home Manager を中心にユーザー環境を管理する
-* macOS は nix-darwin を利用する
-* NixOS は NixOS Modules を利用する
-* 開発環境は Flakes + devShell + nix-direnv を利用する
-* chezmoi は使用しない
+## 構成の組み立て
 
----
-
-# 設計方針
-
-## 基本原則
-
-責務を明確に分離する。
-
-| 責務          | 担当                |
-| ----------- | ----------------- |
-| OS設定(macOS) | nix-darwin        |
-| OS設定(NixOS) | NixOS Modules     |
-| ユーザー環境      | Home Manager      |
-| 開発環境        | Flakes + devShell |
-| 初回導入        | bootstrap script  |
-
----
-
-## サポート対象
-
-### macOS
-
-* GUI
-* nix-darwin
-* Home Manager
-* Homebrew(Cask)
-
-### Linux (GUI)
-
-* Home Manager
-
-### Linux (Headless)
-
-* Home Manager
-
-### NixOS
-
-* NixOS Modules
-* Home Manager
-
-# ディレクトリ構成
+`flake.nix` が構成ごとに `hosts/` の入口を読み込み、入口がモジュールを選びます。
 
 ```text
-dotfiles/
-├── flake.nix
-├── flake.lock
-├── README.md
-│
-├── bootstrap/
-│   ├── install.sh
-│   ├── darwin.sh
-│   └── linux.sh
-│
-├── hosts/
-│   ├── mac-mini/
-│   ├── linux-gui/
-│   ├── linux-headless/
-│   └── nixos/
-│
-├── modules/
-│   ├── common/
-│   ├── darwin/
-│   ├── linux/
-│   └── nixos/
-│
-├── config/
-│   ├── helix/
-│   ├── nushell/
-│   ├── starship.toml
-│   └── ssh/
-│
+flake.nix
+├── darwinConfigurations.darwin   → hosts/darwin/default.nix
+│     system: modules/darwin + modules/home-manager.nix
+│     home:   modules/home/common + modules/home/darwin
+├── nixosConfigurations.nixos     → hosts/nixos/configuration.nix
+│     system: modules/nixos + modules/home-manager.nix
+│     home:   modules/home/common + modules/home/linux
+├── homeConfigurations.linux-gui      → hosts/linux-gui/home.nix
+│     home:   modules/home/common + modules/home/linux + modules/home/linux/gui.nix
+└── homeConfigurations.linux-headless → hosts/linux-headless/home.nix
+      home:   modules/home/common + modules/home/linux
 ```
 
----
+### 共通引数
 
-# hosts
+`flake.nix` は次の値を全モジュールの引数として渡します（system 側は `specialArgs`、
+Home Manager 側は `extraSpecialArgs`）。
 
-ホスト固有設定のみ記述する。
+| 引数 | 内容 |
+| --- | --- |
+| `inputs` | flake の input（`llm-agents` など nixpkgs 以外のパッケージ取得に使う） |
+| `username` | `micanis` |
+| `homeDirectory` | macOS は `/Users/micanis`、Linux は `/home/micanis` |
+| `homeStateVersion` | Home Manager の `home.stateVersion` |
 
-例
+`home.username` / `home.homeDirectory` / `home.stateVersion` はこれらを使って
+`modules/home/common/default.nix` で一括設定しているため、ホスト側で書く必要はありません。
 
-```
-hosts/mac-mini
-```
+## 各ディレクトリのルール
 
-には
+### hosts/
 
-* ホスト名
-* GUI有無
-* Homebrew Cask
-* Mac固有設定
+構成ごとの入口。どのモジュールを import するかと、そのホスト固有の値
+（ホスト名など）だけを書く。共通の設定は書かない。
 
-のみを書く。
+### modules/home/
 
-共通設定は書かない。
+Home Manager モジュール。
 
----
+- `common/` — 全環境共通。CLI ツール（`packages.nix`）、シェル、Git、SSH、
+  Starship、Helix、Nushell、direnv、Zellij。
+- `darwin/` — macOS 専用。Ghostty の設定、Claude Code / Codex、
+  PDF の既定アプリ（`default-apps.nix`）、Karabiner（`karabiner.nix`）。
+- `linux/` — Linux 共通（standalone 用の `home-manager` コマンド）。
+  `gui.nix` はデスクトップ環境向けの追加分（Ghostty 本体と設定）。
 
-# modules
+### modules/darwin/ と modules/nixos/
 
-## common
+OS レベルの設定。
 
-全OS共通。
+- `darwin/system.nix` — Nix、ログインシェル（Nushell）、Touch ID sudo、電源、Tailscale。
+- `darwin/defaults.nix` — `defaults write` 相当の macOS 設定。
+- `darwin/homebrew.nix`, `darwin/apps.nix` — Homebrew の有効化と GUI アプリ一覧。
+- `nixos/` — ユーザー、ブート、フォント、ネットワーク、サービス。
 
-### packages
+### config/
 
-CLIツール
+アプリの設定ファイルをそのままの形式で置き、Home Manager の
+`xdg.configFile` / `home.file` でシンボリックリンクとして配置する。
+Home Manager の option に書き換えないことで、既存の設定やアプリの公式ドキュメントを
+そのまま使える。
 
-* git
-* ripgrep
-* fd
-* bat
-* eza
-* jq
-* yq
-* fzf
-* yazi
-* lazygit
-* gh
-* dust
-* procs
-* hyperfine
-* tokei
+例外:
 
-### shell
+- **Starship** — `programs.starship.settings` に TOML を読み込ませる。
+  Home Manager がシェル統合を生成するため。
+- **Nushell** — `config.nu` / `env.nu` は `programs.nushell` 経由で配置し、
+  Home Manager が Starship・zoxide・direnv の初期化を追記できるようにする。
+  macOS ではネイティブの `~/Library/Application Support/nushell` を使う。
+  自作のエイリアスと関数は `config/nushell/scripts/` に分けている。
+- **Karabiner** — アプリが設定ファイルを書き換えるため、読み取り専用のリンクではなく
+  書き込み可能なコピーとして配置する。各プロファイルの `devices`（マシンごとの
+  デバイス有効／無効）は既存ファイルの値を残す。
 
-* zsh
-* nushell
-* PATH
-* aliases
+## bootstrap/
 
-### starship
+Nix が入っていない状態から構成の適用までを担当し、それ以降の設定は持たない。
 
-Prompt設定
+1. `install.sh` — OS を判定し、Nix を導入、リポジトリを clone（git は `nix-shell` で用意）。
+2. `darwin.sh` — Homebrew を導入し、nix-darwin をビルドして `darwin-rebuild switch`。
+3. `linux.sh` — Home Manager の activation package をビルドして実行。
 
-### helix
+`darwin.sh` と `linux.sh` の共通関数は `lib.sh` にある。`install.sh` は
+`curl | sh` で実行され、その時点ではリポジトリが手元に無いため、同じ処理を自身に持つ。
 
-Editor設定
+## 開発環境
 
-### nushell
+言語ランタイムやプロジェクト固有のツールは Home Manager で管理しない。
+各プロジェクトに `flake.nix`（devShell）と `.envrc`（`use flake`）を置き、
+nix-direnv でディレクトリに入ったときに読み込む。
 
-Nushell設定
+## 今後の課題
 
-### ssh
-
-SSH設定
-
-### direnv
-
-* direnv
-* nix-direnv
-
-### zellij
-
-Terminal Multiplexer
-
----
-
-## darwin
-
-macOS専用。
-
-* Finder
-* Dock
-* Keyboard
-* TouchID sudo
-* Homebrew
-* GUI Applications
-
----
-
-## linux
-
-Linux共通。
-
-GUIあり・なしの差分のみ分離する。
-
-```
-linux/
-├── gui.nix
-└── headless.nix
-```
-
----
-
-## nixos
-
-NixOS専用。
-
-* services
-* users
-* networking
-* fonts
-* hardware
-* boot
-
----
-
-# config
-
-アプリケーション設定をそのまま保存する。
-
-可能な限り Home Manager の option に変換せず、
-
-```
-config/
-```
-
-以下へ置き、
-
-```
-xdg.configFile
-```
-
-で配置する。
-
-例
-
-```
-config/
-├── helix/
-├── nushell/
-└── starship.toml
-```
-
-これにより既存設定をほぼそのまま利用できる。
-
----
-
-# bootstrap
-
-bootstrap は **Nix導入まで** を担当する。
-
-責務は以下のみ。
-
-1. OS判定
-2. Nix導入
-3. Git取得
-4. dotfiles clone
-5. switch実行
-
-Nix導入後の設定は一切書かない。
-
----
-
-# GUIアプリ
-
-GUIアプリは Homebrew Cask を利用する。
-
-例
-
-* Ghostty
-* Google Chrome
-* Docker Desktop
-* Cursor
-* Slack
-* Discord
-
-CLIは Home Manager で管理する。
-
----
-
-# 開発環境
-
-開発環境は Home Manager では管理しない。
-
-プロジェクト単位で
-
-* flake.nix
-* devShell
-* nix-direnv
-
-を利用する。
-
-例
-
-```
-project/
-├── flake.nix
-└── .envrc
-```
-
----
-
-# chezmoiからの移行
-
-削除対象
-
-* .chezmoi.toml
-* .chezmoiscripts
-* .chezmoiignore
-* dot_zshrc
-* dot_profile
-* dot_zshenv
-* dot_bashrc
-
-移行対象
-
-```
-dot_config/
-```
-
-↓
-
-```
-config/
-```
-
-へ移動する。
-
-テンプレート機能は利用しない。
-
----
-
-# 完成形
-
-新品PCで以下のみ実行する。
-
-```bash
-curl -fsSL https://<domain>/install.sh | sh
-```
-
-実行後は
-
-* Nix
-* Home Manager
-* nix-darwin
-* CLI
-* GUIアプリ
-* dotfiles
-
-がすべて再現されることを目標とする。
-
----
-
-# 今後の拡張
-
-将来的には以下も管理対象とする。
-
-* 秘密情報（sops-nix / agenix）
-* ホスト自動判定
-* CIによるflakeチェック
-* GitHub Actionsによるテスト
-* 共通ライブラリ化
+- 秘密情報の管理（sops-nix / agenix）
+- NixOS のハードウェア設定の追加（現状は評価できない）
+- CI での `nix flake check` とビルド確認
