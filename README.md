@@ -73,6 +73,17 @@ sudo mv /etc/shells /etc/shells.before-nix-darwin
 Nix flake は Git に登録されていないファイルを無視します。新しいファイルを追加したら、
 適用前に `git add` してください。
 
+### Mac App Store のアプリを追加したとき
+
+`modules/darwin/apps.nix` の `masApps` にアプリを追加したら、`darwin-rebuild` ではなく
+`./bootstrap/darwin.sh` で適用します。
+
+macOS 26.1 以降、App Store アプリのインストールには管理者権限が必要です。
+`darwin-rebuild` は途中でパスワードを聞けないため、未インストールのアプリがあると
+適用が失敗します。`bootstrap/darwin.sh` は先に `mas install` でそのアプリを入れて
+（ここでパスワードを聞きます）から `darwin-rebuild switch` を実行します。
+アプリ ID は `mas search <名前>` で調べられます。
+
 ### よくある変更の置き場所
 
 | やりたいこと | 編集するファイル |

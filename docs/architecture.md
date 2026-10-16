@@ -104,6 +104,9 @@ Nix が入っていない状態から構成の適用までを担当し、それ�
 
 1. `install.sh` — OS を判定し、Nix を導入、リポジトリを clone（git は `nix-shell` で用意）。
 2. `darwin.sh` — Homebrew を導入し、nix-darwin をビルドして `darwin-rebuild switch`。
+   その前に `masApps` の App Store アプリを `mas install` で入れる（macOS 26.1 以降は
+   root 権限が必要で、`darwin-rebuild` 内の `brew bundle` ではパスワードを聞けないため）。
+   何度実行しても安全なので、App Store アプリを追加したときの適用にも使う。
 3. `linux.sh` — Home Manager の activation package をビルドして実行。
 
 `darwin.sh` と `linux.sh` の共通関数は `lib.sh` にある。`install.sh` は

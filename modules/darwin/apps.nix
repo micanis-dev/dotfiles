@@ -19,6 +19,8 @@
       "zoom"
     ];
 
+    # Installing a new entry needs sudo, which activation cannot prompt for;
+    # apply with bootstrap/darwin.sh, which installs these first.
     masApps = {
       # Purchased on the App Store; the Homebrew cask is the web-store
       # build, which needs a separate license.
