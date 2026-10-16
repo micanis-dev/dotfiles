@@ -2,13 +2,14 @@
 {
   homebrew = {
     casks = [
+      "bitwarden"
       "craft"
       "discord"
       "docker-desktop"
       "ghostty"
-      "jump-desktop-connect"
+      "jump-desktop" # client
+      "jump-desktop-connect" # host agent
       "karabiner-elements"
-      "bitwarden"
       "microsoft-excel"
       "microsoft-powerpoint"
       "microsoft-word"

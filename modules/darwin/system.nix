@@ -1,6 +1,5 @@
 # nix-darwin system settings: Nix, login shell, security, power, services.
 {
-  config,
   lib,
   pkgs,
   username,
@@ -51,14 +50,6 @@
   # Install the CLI and run tailscaled as a system daemon from boot. This
   # avoids depending on the GUI app or a per-user login item.
   services.tailscale.enable = true;
-
-  # This is a one-time migration from the formerly managed GUI cask. The
-  # conditional keeps subsequent activations idempotent.
-  system.activationScripts.removeTailscaleApp.text = ''
-    if ${config.homebrew.prefix}/bin/brew list --cask tailscale-app > /dev/null 2>&1; then
-      ${config.homebrew.prefix}/bin/brew uninstall --cask tailscale-app
-    fi
-  '';
 
   # Keep the system awake so background services such as Tailscale remain
   # connected, while allowing idle displays to sleep after one hour.
