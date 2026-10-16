@@ -13,11 +13,13 @@
       url = "github:nix-darwin/nix-darwin/master";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    # AI coding agents (Claude Code, Codex) packaged outside nixpkgs.
+    llm-agents.url = "git+https://github.com/numtide/llm-agents.nix.git?shallow=1";
   };
 
   outputs =
     inputs@{
-      self,
       nixpkgs,
       home-manager,
       nix-darwin,
@@ -27,14 +29,18 @@
       username = "micanis";
       homeStateVersion = "25.05";
 
-      specialArgs = {
-        inherit inputs username homeStateVersion;
+      # Extra arguments available to every module, both system-level
+      # (nix-darwin / NixOS) and Home Manager.
+      argsFor = homeDirectory: {
+        inherit
+          inputs
+          username
+          homeStateVersion
+          homeDirectory
+          ;
       };
-
-      forAllSystems = nixpkgs.lib.genAttrs [
-        "aarch64-darwin"
-        "x86_64-linux"
-      ];
+      darwinArgs = argsFor "/Users/${username}";
+      linuxArgs = argsFor "/home/${username}";
 
       pkgsFor =
         system:
@@ -43,26 +49,24 @@
           config.allowUnfree = true;
         };
 
+      # Standalone Home Manager for non-NixOS Linux.
       mkHome =
-        {
-          system,
-          hostModule,
-          homeDirectory ? "/home/${username}",
-        }:
+        hostModule:
         home-manager.lib.homeManagerConfiguration {
-          pkgs = pkgsFor system;
-          extraSpecialArgs = specialArgs // {
-            inherit homeDirectory;
-          };
+          pkgs = pkgsFor "x86_64-linux";
+          extraSpecialArgs = linuxArgs;
           modules = [ hostModule ];
         };
+
+      forAllSystems = nixpkgs.lib.genAttrs [
+        "aarch64-darwin"
+        "x86_64-linux"
+      ];
     in
     {
       darwinConfigurations.darwin = nix-darwin.lib.darwinSystem {
         system = "aarch64-darwin";
-        specialArgs = specialArgs // {
-          homeDirectory = "/Users/${username}";
-        };
+        specialArgs = darwinArgs;
         modules = [
           ./hosts/darwin
           home-manager.darwinModules.home-manager
@@ -70,28 +74,20 @@
       };
 
       homeConfigurations = {
-        linux-gui = mkHome {
-          system = "x86_64-linux";
-          hostModule = ./hosts/linux-gui/home.nix;
-        };
-
-        linux-headless = mkHome {
-          system = "x86_64-linux";
-          hostModule = ./hosts/linux-headless/home.nix;
-        };
+        linux-gui = mkHome ./hosts/linux-gui/home.nix;
+        linux-headless = mkHome ./hosts/linux-headless/home.nix;
       };
 
       nixosConfigurations.nixos = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
-        specialArgs = specialArgs // {
-          homeDirectory = "/home/${username}";
-        };
+        specialArgs = linuxArgs;
         modules = [
           ./hosts/nixos/configuration.nix
           home-manager.nixosModules.home-manager
         ];
       };
 
+      # `nix develop` gives the tools used to edit and lint this repository.
       devShells = forAllSystems (
         system:
         let
@@ -109,6 +105,5 @@
           };
         }
       );
-
     };
 }

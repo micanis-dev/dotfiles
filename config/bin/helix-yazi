@@ -2,7 +2,7 @@
 # helix-yazi: open Yazi in a floating Zellij pane and feed the selected file
 # back to the Helix instance that triggered it.
 #
-# Bound from Helix as `:sh helix-yazi` (see dot_config/helix/config.toml).
+# Bound from Helix as `:sh helix-yazi` (see config/helix/config.toml).
 # Requires: zellij, yazi.
 #
 # Flow:

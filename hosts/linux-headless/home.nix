@@ -1,16 +1,7 @@
-{
-  username,
-  homeDirectory,
-  homeStateVersion,
-  ...
-}:
+# Non-NixOS Linux server or container (standalone Home Manager).
 {
   imports = [
-    ../../modules/common
-    ../../modules/linux
+    ../../modules/home/common
+    ../../modules/home/linux
   ];
-
-  home.username = username;
-  home.homeDirectory = homeDirectory;
-  home.stateVersion = homeStateVersion;
 }

@@ -1,17 +1,8 @@
-{
-  username,
-  homeDirectory,
-  homeStateVersion,
-  ...
-}:
+# Non-NixOS Linux desktop (standalone Home Manager).
 {
   imports = [
-    ../../modules/common
-    ../../modules/linux
-    ../../modules/linux/gui.nix
+    ../../modules/home/common
+    ../../modules/home/linux
+    ../../modules/home/linux/gui.nix
   ];
-
-  home.username = username;
-  home.homeDirectory = homeDirectory;
-  home.stateVersion = homeStateVersion;
 }

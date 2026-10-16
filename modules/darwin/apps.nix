@@ -1,3 +1,4 @@
+# GUI apps installed through Homebrew casks and the Mac App Store.
 {
   homebrew = {
     casks = [

@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 let
   configDir =
     if pkgs.stdenv.isDarwin then
@@ -13,13 +18,13 @@ in
     # XDG_CONFIG_HOME, so use Nushell's native Darwin path there. Other
     # platforms keep their configuration under XDG_CONFIG_HOME.
     inherit configDir;
-    configFile.source = ../../config/nushell/config.nu;
-    envFile.source = ../../config/nushell/env.nu;
+    configFile.source = ../../../config/nushell/config.nu;
+    envFile.source = ../../../config/nushell/env.nu;
   };
 
   # Keep user-authored files separate from config.nu/env.nu so Home Manager
   # can append the Starship, zoxide, and direnv integrations it generates.
-  xdg.configFile."nushell/scripts".source = ../../config/nushell/scripts;
+  xdg.configFile."nushell/scripts".source = ../../../config/nushell/scripts;
 
   # Before this configuration, the entire ~/.config/nushell directory was a
   # Home Manager symlink. Unlink only that known legacy target so the files

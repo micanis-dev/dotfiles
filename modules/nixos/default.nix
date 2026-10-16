@@ -1,3 +1,4 @@
+# NixOS system configuration.
 {
   imports = [
     ./users.nix

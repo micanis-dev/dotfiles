@@ -1,26 +1,15 @@
-{
-  username,
-  homeDirectory,
-  homeStateVersion,
-  ...
-}:
+# NixOS host (NixOS modules + Home Manager).
+{ username, ... }:
 {
   imports = [
     ../../modules/nixos
+    ../../modules/home-manager.nix
   ];
 
   networking.hostName = "nixos";
 
-  home-manager.useGlobalPkgs = true;
-  home-manager.useUserPackages = true;
-  home-manager.users.${username} = {
-    imports = [
-      ../../modules/common
-      ../../modules/linux
-    ];
-
-    home.username = username;
-    home.homeDirectory = homeDirectory;
-    home.stateVersion = homeStateVersion;
-  };
+  home-manager.users.${username}.imports = [
+    ../../modules/home/common
+    ../../modules/home/linux
+  ];
 }
